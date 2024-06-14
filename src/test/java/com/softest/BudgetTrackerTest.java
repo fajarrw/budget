@@ -87,4 +87,31 @@ public class BudgetTrackerTest {
         double total = budgetTracker.getTotalExpenses();
         assertEquals(0.0, total, 0.01);
     }
+@Test
+    public void testGetTotalExpensesWhenNoExpenses() {
+        assertEquals(0.0, budgetTracker.getTotalExpenses(), 0.01);
+    }
+
+    @Test
+    public void testAddExpenseWithZeroAmount() {
+        budgetTracker.addExpense("Misc", 0.0, "Freebie");
+        List<Expense> expenses = budgetTracker.getExpenses();
+        assertEquals(1, expenses.size());
+        assertEquals(0.0, expenses.get(0).getAmount(), 0.01);
+    }
+
+    @Test
+    public void testAddExpenseWithNegativeAmount() {
+        budgetTracker.addExpense("Misc", -10.0, "Penalty");
+        List<Expense> expenses = budgetTracker.getExpenses();
+        assertEquals(1, expenses.size());
+        assertEquals(-10.0, expenses.get(0).getAmount(), 0.01);
+    }
+
+    @Test
+    public void testGetExpensesByNonExistentCategory() {
+        budgetTracker.addExpense("Food", 10.5, "Lunch");
+        List<Expense> expenses = budgetTracker.getExpensesByCategory("NonExistentCategory");
+        assertTrue(expenses.isEmpty());
+    }
 }
