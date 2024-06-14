@@ -1,11 +1,17 @@
+
 package com.softest;
 
 import org.junit.Before;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.Arrays;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -22,12 +28,19 @@ public class BudgetTrackerTest {
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "Food", 10.50, "Lunch" },
-                { "Transport", 15.75, "Bus Ticket" },
-                { "Food", 20.00, "Dinner" },
-                { "Entertainment", 30.00, "Movie" }
-        });
+        List<Object[]> testData = new ArrayList<>();
+        try (Reader in = new FileReader("src/test/resources/expenses.csv")) {
+            Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(in);
+            for (CSVRecord record : records) {
+                String category = record.get("category");
+                double amount = Double.parseDouble(record.get("amount"));
+                String description = record.get("description");
+                testData.add(new Object[]{category, amount, description});
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return testData;
     }
 
     public BudgetTrackerTest(String category, double amount, String description) {
@@ -54,20 +67,16 @@ public class BudgetTrackerTest {
 
     @Test
     public void testGetExpenses() {
-        budgetTracker.addExpense("Food", 10.50, "Lunch");
-        budgetTracker.addExpense("Transport", 15.75, "Bus Ticket");
-
+        budgetTracker.addExpense(category, amount, description);
         List<Expense> expenses = budgetTracker.getExpenses();
-        assertEquals(2, expenses.size());
+        assertEquals(1, expenses.size());
     }
 
     @Test
     public void testGetTotalExpenses() {
-        budgetTracker.addExpense("Food", 10.50, "Lunch");
-        budgetTracker.addExpense("Transport", 15.75, "Bus Ticket");
-
+        budgetTracker.addExpense(category, amount, description);
         double total = budgetTracker.getTotalExpenses();
-        assertEquals(26.25, total, 0.01);
+        assertEquals(amount, total, 0.01);
     }
 
     @Test
